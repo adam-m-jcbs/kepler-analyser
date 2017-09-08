@@ -1,10 +1,16 @@
 Welcome to the Kepler model analysis routine
 ============================================
 
-Author: Nathanael Lampe
+Original Author: Nathanael Lampe
 
-Note: This code should work, but handle it with care. Asking
-questions is encouraged.
+This set of routines, to my knowledge, was written by Nathanael Lampe with some
+modifications from Laurens Keek.  As it hasn't been updated in a while, I'm
+(Adam Jacobs) making some of my own changes in my fork to facilitate KEPLER
+analysis.
+
+As I'm actively modifying, things may break and aspects of the below
+documentation may become incorrect.  But probably I'm the only one
+using this.  If not, let me know.
 
 **I don't want to read things yet, show me the code**
 
@@ -40,7 +46,9 @@ properties for each burst.
 
 **Prerequisites?**
 
-This script was designed for *Python 2.7*
+This script was designed for *Python 2.7*.  I'm updating to work with Python 3+,
+as the python scripts that come with KEPLER require it and it's best if we can
+interoperate with those.
 
 You'll need the following Python packages too
  * lmfit (> v0.9)

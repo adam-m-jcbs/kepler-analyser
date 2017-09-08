@@ -25,7 +25,7 @@ TODO:
 - Work out why lmfit doesn't work on certain configurations
 """
 
-from __future__ import division, unicode_literals, print_function
+#from __future__ import division, unicode_literals, print_function
 import numpy as np
 import bottleneck as bn
 import sys

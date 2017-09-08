@@ -19,7 +19,7 @@ Modified in July 2016 by LK to
 - refactored code to be object oriented
 """
 
-from __future__ import division, unicode_literals, print_function
+#from __future__ import division, unicode_literals, print_function
 import numpy as np
 from scipy.interpolate import interp1d
 from copy import deepcopy
@@ -51,7 +51,7 @@ def fitTail(time, lumin, dlumin, params, method='power'):
     args:
     -----
     time: array of times in burst tail
-    lumin: array of luminositiws through burst tail
+    lumin: array of luminosities through burst tail
     dlumin: array of luminosity uncertainties
     params: lmfit.Parameters object specifying parameters [Note 1]
 
@@ -304,7 +304,7 @@ def findAtRiseFrac(time, lumin, peakLum, persLum, frac):
         lumin: 1-d array of burst rise luminosities
         peakLum: peak luminosity
         persLum: persistent luminosity
-        frac: fraction of peak luminsoity to find time at
+        frac: fraction of peak luminosity to find time at
 
     return:
         float, time at which burst reaches frac*(peakLum-persLum)
@@ -332,13 +332,16 @@ def findAtRiseFrac(time, lumin, peakLum, persLum, frac):
 
     grads = (lumin[cands]-lumin[cands-1])/(time[cands]-time[cands-1])
     # exclude -ve gradients (added apr-03-2014)
-    for ii in xrange(len(grads)):
+    for ii in range(len(grads)):
         if grads[ii] < 0:
             grads[ii] = np.Inf
 
     # calculate gradient by back-step FD, rather than central diff
     candGrads = zip(cands, grads)
-    candGrads.sort(key=lambda x: x[1])  # sort by gradient
+    #TODO: The commented out line below was the 2.7 way to do it.  Once you
+    #confirm Python 3 way works, delete.
+    #candGrads.sort(key=lambda x: x[1])  # sort by gradient
+    candGrads = sorted(candGrads, key=lambda x: x[1])  # sort by gradient
 
     best = candGrads[0][0]  # Most likely candidate has lowest gradient
 
@@ -568,7 +571,7 @@ def convexity(time, lumin, peakLum, persLum):
         l *= (10./lastl)
 
         c = 0
-        for ii in xrange(1, len(t)):
+        for ii in range(1, len(t)):
             c += 0.5*((l[ii] + l[ii-1]) - (t[ii] + t[ii-1]))*(t[ii] - t[ii-1])
         return c
     else:
@@ -584,7 +587,7 @@ def convexity(time, lumin, peakLum, persLum):
 def avgParams(times, lums, rads):
     '''
     sumParams(times, lums, rads)
-    each paramater is a list of arrays to be averaged
+    each parameter is a list of arrays to be averaged
 
     Arrays are averaged to the burst with the latest finishing time
     '''
@@ -676,7 +679,7 @@ def intervalAvg(times, lums, rads, interval=0.125):
     args
     -----
         times: list containing times for each burst
-        lums: list containing luiminosities for each burst
+        lums: list containing luminosities for each burst
         rads: list containing radii for each burst
 
     kwargs:
@@ -834,7 +837,7 @@ def separate(burstTime, burstLum, burstRad, modelID, outputDirectory):
     separate(bursttime, burstflux, burstrad, modelID, outputDirectory)
     This program is designed to separate the bursts in the models into
     individual burst files for subsequent analysis. It will take the delta t
-    value's for each burst
+    values for each burst
     Individual burst files do not have the persistent luminosity subtracted
     '''
     print('SEPARATING '+str(modelID))
@@ -1017,9 +1020,16 @@ def separate(burstTime, burstLum, burstRad, modelID, outputDirectory):
                     break
         jj += 1
 
+    #Create the output directory if it doesn't exist
+    if not os.path.isdir(outputDirectory):
+        if os.path.exists(outputDirectory):
+            #Exists, but as a file.  Don't overwrite it
+            raise FileExistsError()
+        os.makedirs(outputDirectory)
+
     for ii in range(0, len(peakIndex)):
         fname = os.path.join(outputDirectory, '%i.data' % (ii,))
-        saveArray = zip(burstTims[ii], burstLums[ii], burstRads[ii])
+        saveArray = list(zip(burstTims[ii], burstLums[ii], burstRads[ii]))
         headString = 'time luminosity radius'
         np.savetxt(fname, saveArray, delimiter=' ', newline='\n',
                    header=headString)
@@ -1078,7 +1088,7 @@ class ModelAnalysis:
             {k: v[index] for k, v in self.key_table.items()})
 
     This class takes a model id code, and matching time, luminosity and radius
-    arrays, and separates them into individal bursts, as well as producing a
+    arrays, and separates them into individual bursts, as well as producing a
     mean lightcurve and mean burst parameters.
 
     Input:
@@ -1276,7 +1286,7 @@ class ModelAnalysis:
         """
         x = self.separated
         dbVals = []
-        for i in xrange(0, x['num']):
+        for i in range(0, x['num']):
             dbVals.append((x['burstID'],
                            i,
                            x['bstart'][i],
@@ -1326,7 +1336,7 @@ class ModelAnalysis:
                 allRads.append(burstRad[sInd:fInd])
 
             mt, ml, mr, mdl, mdr = avgParams(allTims, allLums, allRads)
-            saveArray = zip(mt, ml, mdl, mr, mdr)
+            saveArray = list(zip(mt, ml, mdl, mr, mdr))
             if output_dir is not None:
                 fname = os.path.join(output_dir, self.modelID, 'mean.data')
                 print('writing burst to %s' % fname)
