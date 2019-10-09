@@ -325,7 +325,8 @@ def findAtRiseFrac(time, lumin, peakLum, persLum, frac):
 
     # find candidates where we cross the required Lumfrac
     greater = lumin > fracLum
-    cross = greater - np.roll(greater, 1)
+    #OLD, deprecated numpy boolean subtract: cross = greater - np.roll(greater, 1)
+    cross = greater ^ np.roll(greater, 1)
     cands = np.nonzero(cross[1:])[0] + 1  # candidates to cross fracLum
 
     avgBurstGrad = (lumin[-1]-lumin[0])/(time[-1]-time[0])
@@ -1339,6 +1340,7 @@ class ModelAnalysis:
             saveArray = list(zip(mt, ml, mdl, mr, mdr))
             if output_dir is not None:
                 fname = os.path.join(output_dir, self.modelID, 'mean.data')
+                os.makedirs(os.path.join(output_dir, self.modelID), exist_ok=True)
                 print('writing burst to %s' % fname)
                 headString = 'time luminosity u_luminosity radius u_radius'
                 np.savetxt(fname, saveArray, delimiter=' ', newline='\n',
@@ -1396,7 +1398,8 @@ class ModelAnalysis:
         if x['num'] > 0:  # if there are bursts
             if x['num'] >= 3:
                 # Ignore the first burst in train if there are over 3 bursts
-                for value in x.itervalues():
+                #for value in x.itervalues():  #python 2
+                for value in iter(x.values()):
                     if type(value) == list:
                         value.remove(value[0])
 
@@ -1435,8 +1438,8 @@ class ModelAnalysis:
             uR2590 = np.std(t25t90)
 
             if x['num'] >= 2:
-                tDel = np.mean(x['tdel'][1:])
-                uTDel = np.std(x['tdel'][1:])
+                tDel = np.mean(x['tdel'][4:])
+                uTDel = np.std(x['tdel'][4:])
                 alpha = np.mean(x['alpha'][1:])
                 uAlpha = np.std(x['alpha'][1:])
             else:
